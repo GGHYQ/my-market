@@ -1,6 +1,8 @@
 package cn.xiaofu.test;
 
+import cn.xiaofu.infrastructure.dao.IAwardDao;
 import cn.xiaofu.infrastructure.dao.IStrategyDao;
+import cn.xiaofu.infrastructure.dao.po.AwardPO;
 import cn.xiaofu.infrastructure.dao.po.StrategyPO;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
@@ -15,13 +17,13 @@ import java.util.List;
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class ApiTest {
+public class AwardDaoTest {
+    @Autowired
+    private IAwardDao iAwardDao;
 
     @Test
-    public void test() {
-        log.info("测试完成");
+    public void testAwardList(){
+        List<AwardPO> awardPOS = iAwardDao.queryList();
+        log.info("awardPOS:{}", JSON.toJSONString(awardPOS));
     }
-
-
-
 }

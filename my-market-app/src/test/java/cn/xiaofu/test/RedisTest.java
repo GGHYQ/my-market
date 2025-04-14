@@ -2,6 +2,7 @@ package cn.xiaofu.test;
 
 import cn.xiaofu.infrastructure.dao.IStrategyDao;
 import cn.xiaofu.infrastructure.dao.po.StrategyPO;
+import cn.xiaofu.infrastructure.redis.IRedisService;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
@@ -15,13 +16,18 @@ import java.util.List;
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class ApiTest {
+public class RedisTest {
+    @Autowired
+    private IRedisService redissionService;
 
     @Test
-    public void test() {
-        log.info("测试完成");
+   public void testRedisGet(){
+
+        redissionService.setValue("testKey", "测试");
+
+        Object test = redissionService.getValue("testKey");
+        log.info("test:{}", JSON.toJSONString(test));
+
+
     }
-
-
-
 }

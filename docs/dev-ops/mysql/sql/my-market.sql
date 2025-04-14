@@ -1,0 +1,129 @@
+/*
+ Navicat Premium Data Transfer
+
+ Source Server         : 127.0.0.1
+ Source Server Type    : MySQL
+ Source Server Version : 50639
+ Source Host           : localhost:3306
+ Source Schema         : road-map
+
+ Target Server Type    : MySQL
+ Target Server Version : 50639
+ File Encoding         : 65001
+
+ Date: 15/07/2023 09:26:39
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+CREATE database if NOT EXISTS `my_market` default character set utf8mb4 collate utf8mb4_0900_ai_ci;
+use `my_market`;
+
+-- ----------------------------
+-- Table structure for employee
+-- ----------------------------
+DROP TABLE IF EXISTS `employee`;
+CREATE TABLE `strategy` (
+    `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+    `strategy_id` bigint(8) NOT NULL DEFAULT '0' COMMENT '抽奖策略ID',
+    `strategy_desc` varchar(128) NOT NULL COMMENT '抽奖策略描述',
+    `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_strategy_id` (`strategy_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `strategy` (`id`, `strategy_id`, `strategy_desc`)
+VALUES
+    (1,100001,'大转盘抽奖');
+
+
+CREATE TABLE `strategy_award` (
+      `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+      `strategy_id` bigint(8) NOT NULL COMMENT '抽奖策略ID',
+      `award_id` int(8) NOT NULL COMMENT '抽奖奖品ID - 内部流转使用',
+      `award_title` varchar(128) NOT NULL DEFAULT '' COMMENT '抽奖奖品标题',
+      `award_subtitle` varchar(128)  NOT NULL DEFAULT '' COMMENT '抽奖奖品副标题',
+      `award_count` int(8) NOT NULL DEFAULT '0' COMMENT '奖品库存总量',
+      `award_count_surplus` int(8) NOT NULL DEFAULT '0' COMMENT '奖品库存剩余',
+      `award_rate` decimal(6,4) NOT NULL COMMENT '奖品中奖概率',
+      `rule_models` varchar(256)  NOT NULL DEFAULT '' COMMENT '规则模型，rule配置的模型同步到此表，便于使用',
+      `sort` int(2) NOT NULL DEFAULT '0' COMMENT '展示排序',
+      `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+      `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+      PRIMARY KEY (`id`),
+      KEY `idx_strategy_id_award_id` (`strategy_id`,`award_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+INSERT INTO `strategy_award` (`id`, `strategy_id`, `award_id`, `award_title`, `award_subtitle`, `award_count`, `award_count_surplus`, `award_rate`, `rule_models`, `sort`)
+VALUES
+    (1,100001,101,'随机积分','',80000,80000,80.0000,'rule_random,rule_luck_award',1),
+    (2,100001,102,'5次使用','',10000,10000,10.0000,'rule_luck_award',2),
+    (3,100001,103,'10次使用','',5000,5000,5.0000,'rule_luck_award',3),
+    (4,100001,104,'20次使用','',4000,4000,4.0000,'rule_luck_award',4),
+    (5,100001,105,'增加gpt-4对话模型','',600,600,0.6000,'rule_luck_award',5),
+    (6,100001,106,'增加dall-e-2画图模型','',200,200,0.2000,'rule_luck_award',6),
+    (7,100001,107,'增加dall-e-3画图模型','抽奖1次后解锁',200,200,0.2000,'rule_lock,rule_luck_award',7),
+    (8,100001,108,'增加100次使用','抽奖2次后解锁',199,199,0.1999,'rule_lock,rule_luck_award',8),
+    (9,100001,109,'解锁全部模型','抽奖6次后解锁',1,1,0.0001,'rule_lock,rule_luck_award',9);
+
+
+CREATE TABLE `strategy_rule` (
+     `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+     `strategy_id` int(8) NOT NULL COMMENT '抽奖策略ID',
+     `award_id` int(8) NOT NULL DEFAULT 0 COMMENT '抽奖奖品ID【规则类型为策略，则不需要奖品ID】',
+     `rule_type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '抽象规则类型；1-策略规则、2-奖品规则',
+     `rule_model` varchar(16) NOT NULL DEFAULT '' COMMENT '抽奖规则类型【rule_random - 随机值计算、rule_lock - 抽奖几次后解锁、rule_luck_award - 幸运奖(兜底奖品)】',
+     `rule_value` varchar(64) NOT NULL COMMENT '抽奖规则比值',
+     `rule_desc` varchar(128) NOT NULL COMMENT '抽奖规则描述',
+     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+     `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+     PRIMARY KEY (`id`),
+     KEY `idx_strategy_id_award_id` (`strategy_id`,`award_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+INSERT INTO `strategy_rule` (`id`, `strategy_id`, `award_id`, `rule_type`, `rule_model`, `rule_value`, `rule_desc`)
+VALUES
+    (1,100001,101,2,'rule_random','1,1000','随机积分策略'),
+    (2,100001,107,2,'rule_lock','1','抽奖1次后解锁'),
+    (3,100001,108,2,'rule_lock','2','抽奖2次后解锁'),
+    (4,100001,109,2,'rule_lock','6','抽奖6次后解锁'),
+    (5,100001,107,2,'rule_luck_award','1,100','兜底奖品100以内随机积分'),
+    (6,100001,108,2,'rule_luck_award','1,100','兜底奖品100以内随机积分'),
+    (7,100001,101,2,'rule_luck_award','1,10','兜底奖品10以内随机积分'),
+    (8,100001,102,2,'rule_luck_award','1,20','兜底奖品20以内随机积分'),
+    (9,100001,103,2,'rule_luck_award','1,30','兜底奖品30以内随机积分'),
+    (10,100001,104,2,'rule_luck_award','1,40','兜底奖品40以内随机积分'),
+    (11,100001,105,2,'rule_luck_award','1,50','兜底奖品50以内随机积分'),
+    (12,100001,106,2,'rule_luck_award','1,60','兜底奖品60以内随机积分'),
+    (13,100001,0,1,'rule_weight','6000,102,103,104,105,106,107,108,109','消耗6000分，必中奖范围'),
+    (14,100001,0,1,'rule_blacklist','1','黑名单抽奖，积分兜底');
+
+
+CREATE TABLE `award` (
+                         `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+                         `award_id` int(8) NOT NULL COMMENT '奖品ID - 内部流转使用',
+                         `award_key` varchar(128) NOT NULL DEFAULT '' COMMENT '奖品处理标识',
+                         `award_config` varchar(128)  NOT NULL DEFAULT '' COMMENT '奖品处理配置',
+                         `award_desc` varchar(128)  NOT NULL DEFAULT '' COMMENT '奖品描述',
+                         `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                         `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+                         PRIMARY KEY (`id`),
+                         KEY `idx_award_id` (`award_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+INSERT INTO `award` ( `award_id`, `award_key`, `award_config`, `award_desc`)
+VALUES
+    (101,'user_credit_random','','用户积分'),
+    (102,'openai_use_count_5','5','OpenAI增加5次使用次数'),
+    (103,'openai_use_count_10','10','OpenAI增加10次使用次数'),
+    (104,'openai_use_count_20','20','OpenAI增加20次使用次数'),
+    (105,'openai_model','gpt-4','OpenAI模型 gpt4'),
+    (106,'openai_model','dall-e-2','OpenAI模型 dall-e-2'),
+    (107,'openai_model','dall-e-3','OpenAI模型 dall-e-3'),
+    (108,'openai_use_count_100','100','OpenAI增加100次使用次数'),
+    (109,'openai_model','gpt-4,adll-e-2,dall-e-3','解锁全部模型');
